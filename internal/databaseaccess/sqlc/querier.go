@@ -7,23 +7,27 @@ package db
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
 	AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (Account, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	GetAccount(ctx context.Context, id int64) (Account, error)
 	GetAccountByUserId(ctx context.Context, userID int64) ([]Account, error)
 	GetBalance(ctx context.Context, id int64) (int64, error)
+	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetTransfer(ctx context.Context, id int64) (Transfer, error)
 	GetUser(ctx context.Context, username pgtype.Text) (User, error)
 	GetUsersByUsernameOrPhone(ctx context.Context, arg GetUsersByUsernameOrPhoneParams) ([]GetUsersByUsernameOrPhoneRow, error)
 	ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error)
 	ListTransfers(ctx context.Context, arg ListTransfersParams) ([]Transfer, error)
 	UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error)
+	UpdateExpiredTime(ctx context.Context, arg UpdateExpiredTimeParams) (Session, error)
 	UpdateTransferStatus(ctx context.Context, arg UpdateTransferStatusParams) (Transfer, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	VerifyEmail(ctx context.Context, arg VerifyEmailParams) (User, error)

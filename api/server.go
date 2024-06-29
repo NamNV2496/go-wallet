@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
+	"github.com/namnv2496/go-wallet/config"
 	"github.com/namnv2496/go-wallet/internal/databaseaccess"
 	"github.com/namnv2496/go-wallet/internal/logic"
 	"github.com/namnv2496/go-wallet/internal/mq/consumer"
@@ -12,20 +13,24 @@ import (
 )
 
 type Server struct {
+	config          config.Config
 	router          *gin.Engine
 	token           token.Maker
 	accountService  logic.AccountLogic
 	userService     logic.UserLogic
 	transferService logic.TransferLogic
+	sessionService  logic.SessionLogic
 	producer        *producer.Producer
 	consumer        *consumer.Consumer
 }
 
 func NewGinServer(
+	config config.Config,
 	token token.Maker,
 	accountService logic.AccountLogic,
 	userService logic.UserLogic,
 	transferService logic.TransferLogic,
+	sessionService logic.SessionLogic,
 	producer *producer.Producer,
 	consumer *consumer.Consumer,
 ) (*Server, error) {
@@ -35,10 +40,12 @@ func NewGinServer(
 		v.RegisterValidation("role", validRole)
 	}
 	server := &Server{
+		config:          config,
 		token:           token,
 		accountService:  accountService,
 		userService:     userService,
 		transferService: transferService,
+		sessionService:  sessionService,
 		producer:        producer,
 		consumer:        consumer,
 	}
@@ -55,7 +62,7 @@ func (server *Server) setupRouter() {
 	router.POST("user", server.createUser)
 	router.PUT("verify_user", server.verifyuser)
 	router.POST("users/login", server.login)
-	// router.POST("/tokens/renew_access", server.renewAccessToken)
+	router.POST("/users/renew_access", server.renewAccessToken)
 
 	authRoutes := router.Group("/").Use(authMiddleware(server.token))
 

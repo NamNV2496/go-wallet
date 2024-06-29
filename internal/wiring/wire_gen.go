@@ -37,7 +37,11 @@ func Initialize(path string) (*app.App, error) {
 	if err != nil {
 		return nil, err
 	}
-	transerLogic, err := logic.NewtranserLogic(database)
+	transferLogic, err := logic.NewtranserLogic(database)
+	if err != nil {
+		return nil, err
+	}
+	sessionLogic, err := logic.NewSessionLogic(database)
 	if err != nil {
 		return nil, err
 	}
@@ -45,11 +49,11 @@ func Initialize(path string) (*app.App, error) {
 	if err != nil {
 		return nil, err
 	}
-	consumerConsumer, err := consumer.NewConsumer(transerLogic)
+	consumerConsumer, err := consumer.NewConsumer(transferLogic)
 	if err != nil {
 		return nil, err
 	}
-	server, err := api.NewGinServer(maker, accountLogic, userLogic, transerLogic, producerProducer, consumerConsumer)
+	server, err := api.NewGinServer(configConfig, maker, accountLogic, userLogic, transferLogic, sessionLogic, producerProducer, consumerConsumer)
 	if err != nil {
 		return nil, err
 	}

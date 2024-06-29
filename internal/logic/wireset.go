@@ -6,4 +6,5 @@ var LogicWireSet = wire.NewSet(
 	NewAccountLogic,
 	NewUserLogic,
 	NewtranserLogic,
+	NewSessionLogic,
 )

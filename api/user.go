@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -143,9 +144,12 @@ type loginRequest struct {
 }
 
 type loginResponse struct {
-	Token     string    `json:"token"`
-	Username  string    `json:"username"`
-	ExpiredAt time.Time `json:"expired_at"`
+	Token                 string    `json:"token"`
+	Username              string    `json:"username"`
+	ExpiredAt             time.Time `json:"expired_at"`
+	SessionId             string    `json:"session_id"`
+	RefreshToken          string    `json:"refresh_token"`
+	RefreshTokenExpiredAt time.Time `json:"refresh_token_expired_at"`
 }
 
 func (s *Server) login(ctx *gin.Context) {
@@ -165,16 +169,120 @@ func (s *Server) login(ctx *gin.Context) {
 		return
 	}
 
-	token, accessPayload, err := s.token.CreateToken(user.ID, req.Username, user.Role, time.Duration(time.Hour*24))
+	token, accessPayload, err := s.token.CreateToken(
+		user.ID,
+		req.Username,
+		user.Role,
+		s.config.AccessTokenDuration,
+	)
 	if err != nil {
 		log.Println("Failed to create token")
 		return
 	}
 
+	refreshToken, refreshPayload, err := s.token.CreateToken(
+		user.ID,
+		req.Username,
+		user.Role,
+		s.config.RefreshTokenDuration,
+	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	session, err := s.sessionService.CreateSession(
+		ctx,
+		refreshPayload.Id,
+		user.ID,
+		req.Username,
+		refreshToken,
+		ctx.Request.UserAgent(),
+		ctx.ClientIP(),
+		false,
+		refreshPayload.ExpiredAt,
+	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 	rsp := loginResponse{
-		Token:     token,
-		Username:  req.Username,
-		ExpiredAt: accessPayload.ExpiredAt,
+		Token:                 token,
+		ExpiredAt:             accessPayload.ExpiredAt,
+		Username:              req.Username,
+		SessionId:             session.ID.String(),
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiredAt: refreshPayload.ExpiredAt,
+	}
+	ctx.JSON(http.StatusOK, rsp)
+}
+
+type renewTokenRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+type renewTokenResponse struct {
+	AccessToken          string    `json:"access_token"`
+	AccessTokenExpiresAt time.Time `json:"access_token_expires_at"`
+}
+
+func (s *Server) renewAccessToken(ctx *gin.Context) {
+	var req renewTokenRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		log.Println("Invalid request")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+	refreshPayload, err := s.token.VerifyToken(req.RefreshToken)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+	session, err := s.sessionService.GetSession(ctx, refreshPayload.Id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		return
+	}
+
+	if session.IsBlocked {
+		err := fmt.Errorf("blocked session")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	if session.Username != refreshPayload.Username {
+		err := fmt.Errorf("incorrect session user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	if session.RefreshToken != req.RefreshToken {
+		err := fmt.Errorf("mismatched session token")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	if time.Now().After(session.ExpiresAt) {
+		err := fmt.Errorf("expired session")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+	accessToken, accessPayload, err := s.token.CreateToken(
+		refreshPayload.UserId,
+		refreshPayload.Username,
+		refreshPayload.Role,
+		s.config.AccessTokenDuration,
+	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	// update session
+	s.sessionService.UpdateExpiredTime(ctx, refreshPayload.Id, accessPayload.ExpiredAt)
+	rsp := renewTokenResponse{
+		AccessToken:          accessToken,
+		AccessTokenExpiresAt: accessPayload.ExpiredAt,
 	}
 	ctx.JSON(http.StatusOK, rsp)
 }
