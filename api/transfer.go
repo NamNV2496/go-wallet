@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/namnv2496/go-wallet/internal/mq"
 	"github.com/namnv2496/go-wallet/internal/token"
 )
 
@@ -57,15 +58,18 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
-	// transfer money
-	_, err = server.accountService.AddAccountBalance(ctx, req.FromAccountID, -req.Amount)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-	_, err = server.accountService.AddAccountBalance(ctx, req.ToAccountID, req.Amount)
-	if err != nil {
+	// trigger to 3rd party
+	if err := server.producer.SendMessage(
+		mq.TopicRequest,
+		mq.TransferRequest{
+			TransferId: transfer.ID,
+			FromId:     req.FromAccountID,
+			ToId:       req.ToAccountID,
+			Amount:     req.Amount,
+			Currency:   req.Currency,
+			Message:    req.Message,
+		},
+	); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
@@ -139,4 +143,22 @@ func (server *Server) listTransfers(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, transfers)
+}
+
+func (server *Server) fakeResult(ctx *gin.Context) {
+
+	var result mq.TransferResponse
+	if err := ctx.ShouldBindJSON(&result); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	// trigger to 3rd party
+	if err := server.producer.SendMessage(
+		mq.TopicResult,
+		result,
+	); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, result)
 }

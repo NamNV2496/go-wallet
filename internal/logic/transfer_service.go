@@ -2,18 +2,21 @@ package logic
 
 import (
 	"context"
+	"log"
 
 	"github.com/namnv2496/go-wallet/internal/databaseaccess"
 	db "github.com/namnv2496/go-wallet/internal/databaseaccess/sqlc"
 )
 
-type TranserLogic interface {
+type TransferLogic interface {
 	CreateTransfer(ctx context.Context, from int64, to int64, amount int64, currency string, message string) (db.Transfer, error)
 	GetTransfer(ctx context.Context, id int64) (db.Transfer, error)
 	ListTransfers(ctx context.Context, from int64, to int64, limit int32, offset int32) ([]db.Transfer, error)
+	UpdateBalanceOfTransfer(ctx context.Context, from int64, to int64, amount int64) error
+	UpdateStatusOfTransfer(ctx context.Context, id int64, status int32, message string) (db.Transfer, error)
 }
 
-var _ TranserLogic = (*transerLogic)(nil)
+var _ TransferLogic = (*transerLogic)(nil)
 
 type transerLogic struct {
 	database *databaseaccess.Database
@@ -21,7 +24,7 @@ type transerLogic struct {
 
 func NewtranserLogic(
 	database *databaseaccess.Database,
-) (TranserLogic, error) {
+) (TransferLogic, error) {
 	return &transerLogic{
 		database: database,
 	}, nil
@@ -69,4 +72,52 @@ func (t transerLogic) ListTransfers(
 		Offset:        offset,
 	}
 	return t.database.ListTransfers(ctx, arg)
+}
+
+func (t transerLogic) UpdateBalanceOfTransfer(
+	ctx context.Context,
+	from int64,
+	to int64,
+	amount int64,
+) error {
+	// transfer money
+	minusArg := db.AddAccountBalanceParams{
+		ID:     from,
+		Amount: -amount,
+	}
+	_, err := t.database.AddAccountBalance(ctx, minusArg)
+	if err != nil {
+		log.Println("Error when update balance: ", err)
+		return err
+	}
+
+	addArg := db.AddAccountBalanceParams{
+		ID:     to,
+		Amount: amount,
+	}
+	_, err = t.database.AddAccountBalance(ctx, addArg)
+	if err != nil {
+		log.Println("Error when update balance: ", err)
+		return err
+	}
+	return nil
+}
+
+func (t transerLogic) UpdateStatusOfTransfer(ctx context.Context, id int64, status int32, message string) (db.Transfer, error) {
+
+	var arg db.UpdateTransferStatusParams
+	// Success
+	if status == 1 {
+		arg = db.UpdateTransferStatusParams{
+			ID:     id,
+			Status: status,
+		}
+	} else {
+		arg = db.UpdateTransferStatusParams{
+			ID:      id,
+			Status:  status,
+			Message: message,
+		}
+	}
+	return t.database.UpdateTransferStatus(ctx, arg)
 }

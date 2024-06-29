@@ -1,35 +1,47 @@
 package producer
 
 import (
+	"encoding/json"
 	"log"
 
 	"github.com/IBM/sarama"
 	"github.com/namnv2496/go-wallet/internal/mq"
 )
 
-func NewProducer() (sarama.SyncProducer, error) {
+type Producer struct {
+	client sarama.SyncProducer
+}
+
+func NewProducer() (*Producer, error) {
 
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Retry.Max = mq.MaxRetry
 	config.Producer.Return.Successes = true
+
 	producer, err := sarama.NewSyncProducer([]string{mq.BrokerList}, config)
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if err := producer.Close(); err != nil {
-			log.Fatalln("Failed to close producer")
-		}
-	}()
-	msg := &sarama.ProducerMessage{
-		Topic: mq.Topic,
-		Value: sarama.StringEncoder("Something Cool"),
-	}
-	partition, offset, err := producer.SendMessage(msg)
+
+	return &Producer{
+		client: producer,
+	}, nil
+}
+
+func (p *Producer) SendMessage(topic string, req any) error {
+	data, err := json.Marshal(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	log.Printf("Message is stored in topic(%s)/partition(%d)/offset(%d)\n", mq.Topic, partition, offset)
-	return producer, nil
+	msg := &sarama.ProducerMessage{
+		Topic: topic,
+		Value: sarama.StringEncoder(data),
+	}
+	partition, offset, err := p.client.SendMessage(msg)
+	if err != nil {
+		return err
+	}
+	log.Printf("Message is stored in topic(%s)/partition(%d)/offset(%d)\n", mq.TopicRequest, partition, offset)
+	return nil
 }

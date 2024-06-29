@@ -129,18 +129,21 @@ func (q *Queries) ListTransfers(ctx context.Context, arg ListTransfersParams) ([
 
 const updateTransferStatus = `-- name: UpdateTransferStatus :one
 UPDATE transfers
-SET status = $2
-WHERE id = $1
+SET
+  status = COALESCE($1, status),
+  message = COALESCE($2, message)
+WHERE id = $3
 RETURNING id, from_account_id, to_account_id, amount, currency, status, message, created_at
 `
 
 type UpdateTransferStatusParams struct {
-	ID     int64 `json:"id"`
-	Status int32 `json:"status"`
+	Status  int32  `json:"status"`
+	Message string `json:"message"`
+	ID      int64  `json:"id"`
 }
 
 func (q *Queries) UpdateTransferStatus(ctx context.Context, arg UpdateTransferStatusParams) (Transfer, error) {
-	row := q.db.QueryRow(ctx, updateTransferStatus, arg.ID, arg.Status)
+	row := q.db.QueryRow(ctx, updateTransferStatus, arg.Status, arg.Message, arg.ID)
 	var i Transfer
 	err := row.Scan(
 		&i.ID,

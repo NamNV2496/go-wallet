@@ -6,6 +6,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/namnv2496/go-wallet/internal/databaseaccess"
 	"github.com/namnv2496/go-wallet/internal/logic"
+	"github.com/namnv2496/go-wallet/internal/mq/consumer"
+	"github.com/namnv2496/go-wallet/internal/mq/producer"
 	"github.com/namnv2496/go-wallet/internal/token"
 )
 
@@ -14,14 +16,18 @@ type Server struct {
 	token           token.Maker
 	accountService  logic.AccountLogic
 	userService     logic.UserLogic
-	transferService logic.TranserLogic
+	transferService logic.TransferLogic
+	producer        *producer.Producer
+	consumer        *consumer.Consumer
 }
 
 func NewGinServer(
 	token token.Maker,
 	accountService logic.AccountLogic,
 	userService logic.UserLogic,
-	transferService logic.TranserLogic,
+	transferService logic.TransferLogic,
+	producer *producer.Producer,
+	consumer *consumer.Consumer,
 ) (*Server, error) {
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
@@ -33,6 +39,8 @@ func NewGinServer(
 		accountService:  accountService,
 		userService:     userService,
 		transferService: transferService,
+		producer:        producer,
+		consumer:        consumer,
 	}
 	server.setupRouter()
 	return server, nil
@@ -64,11 +72,15 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("transfer/:id", server.getTransfer)
 	authRoutes.GET("transfers", server.listTransfers)
 
+	authRoutes.POST("transfers/fakeResult", server.fakeResult)
+
 	server.router = r
 }
 
 func (server *Server) Start(address string) error {
-	return server.router.Run(address)
+	go server.consumer.Start()
+	server.router.Run(address)
+	return nil
 }
 
 func errorResponse(err error) gin.H {

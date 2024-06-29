@@ -26,6 +26,8 @@ OFFSET $4;
 
 -- name: UpdateTransferStatus :one
 UPDATE transfers
-SET status = $2
-WHERE id = $1
+SET
+  status = COALESCE($1, status),
+  message = COALESCE($2, message)
+WHERE id = $3
 RETURNING *;

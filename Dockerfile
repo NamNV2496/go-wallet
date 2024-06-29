@@ -9,7 +9,9 @@ FROM alpine:3.20
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY app.env .
+COPY start.sh .
 COPY /internal/databaseaccess/migration/sql ./internal/databaseaccess/migration/sql
 
 EXPOSE 8080
 CMD [ "/app/main" ]
+ENTRYPOINT [ "/app/start.sh" ]

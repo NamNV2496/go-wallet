@@ -1,49 +1,106 @@
 package consumer
 
 import (
+	"context"
+	"encoding/json"
 	"log"
 	"os"
 	"os/signal"
 
 	"github.com/IBM/sarama"
+	"github.com/namnv2496/go-wallet/internal/logic"
 	"github.com/namnv2496/go-wallet/internal/mq"
 )
 
-func NewConsumer() error {
+type Consumer struct {
+	transferService logic.TransferLogic
+	consumer        sarama.ConsumerGroup
+}
 
-	config := sarama.NewConfig()
-	config.Consumer.Return.Errors = true
+func NewConsumer(
+	transferService logic.TransferLogic,
+) (*Consumer, error) {
+
+	saramaConfig := sarama.NewConfig()
+	saramaConfig.ClientID = mq.ClientId
+	// saramaConfig.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
+
 	brokers := mq.BrokerList
-	master, err := sarama.NewConsumer([]string{brokers}, config)
+	saramaConsumer, err := sarama.NewConsumerGroup([]string{brokers}, mq.ClientId, saramaConfig)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer func() {
-		if err := master.Close(); err != nil {
-			log.Fatalln("Failed to close consumer")
-		}
-	}()
-	consumer, err := master.ConsumePartition(mq.Topic, int32(mq.Partition), sarama.OffsetOldest)
-	if err != nil {
-		return err
-	}
+
+	return &Consumer{
+		transferService: transferService,
+		consumer:        saramaConsumer,
+	}, nil
+}
+
+func (c *Consumer) Start() error {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt)
 	doneCh := make(chan struct{})
+
+	ctx := context.Background()
+
 	go func() {
 		for {
-			select {
-			case err := <-consumer.Errors():
-				log.Println(err)
-			case msg := <-consumer.Messages():
-				log.Println("Received messages", string(msg.Key), string(msg.Value))
-			case <-signals:
-				log.Println("Interrupt is detected")
-				doneCh <- struct{}{}
+			if err := c.consumer.Consume(ctx, []string{mq.TopicResult}, c); err != nil {
+				log.Printf("Error from consumer: %v", err)
+			}
+			if ctx.Err() != nil {
+				return
 			}
 		}
 	}()
-	<-doneCh
-	log.Println("Processed messages")
+
+	<-signals
+	log.Println("Interrupt is detected")
+	close(doneCh)
+	return nil
+}
+
+func (c *Consumer) Setup(sarama.ConsumerGroupSession) error {
+	return nil
+}
+
+func (c *Consumer) Cleanup(sarama.ConsumerGroupSession) error {
+	return nil
+}
+
+func (c *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	for msg := range claim.Messages() {
+		log.Println("Received message:", string(msg.Key), ":", string(msg.Value))
+		var transferResult mq.TransferResponse
+		err := json.Unmarshal(msg.Value, &transferResult)
+		if err != nil {
+			log.Println("Failed to unmarshal Kafka message:", err)
+			continue
+		}
+		if transferResult.Amount > 0 && transferResult.Status == 1 {
+			if err := c.transferService.UpdateBalanceOfTransfer(
+				context.Background(),
+				transferResult.FromId,
+				transferResult.ToId,
+				transferResult.Amount,
+			); err != nil {
+				log.Println("Failed to update balance:", err)
+				continue
+			}
+		}
+		if _, err := c.transferService.UpdateStatusOfTransfer(
+			context.Background(),
+			transferResult.TransferId,
+			transferResult.Status,
+			transferResult.Message,
+		); err != nil {
+			log.Println("Failed to update balance:", err)
+			continue
+		}
+		// can trigger to app can know
+
+		session.MarkMessage(msg, "")
+	}
 	return nil
 }

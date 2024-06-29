@@ -12,12 +12,13 @@ import (
 	"github.com/namnv2496/go-wallet/internal/app"
 	"github.com/namnv2496/go-wallet/internal/databaseaccess"
 	"github.com/namnv2496/go-wallet/internal/logic"
+	"github.com/namnv2496/go-wallet/internal/mq/consumer"
+	"github.com/namnv2496/go-wallet/internal/mq/producer"
 	"github.com/namnv2496/go-wallet/internal/token"
 )
 
 // Injectors from wire.go:
 
-// func Initialize(path string) (*database.Database, error) {
 func Initialize(path string) (*app.App, error) {
 	configConfig, err := config.LoadAllConfig(path)
 	if err != nil {
@@ -40,7 +41,15 @@ func Initialize(path string) (*app.App, error) {
 	if err != nil {
 		return nil, err
 	}
-	server, err := api.NewGinServer(maker, accountLogic, userLogic, transerLogic)
+	producerProducer, err := producer.NewProducer()
+	if err != nil {
+		return nil, err
+	}
+	consumerConsumer, err := consumer.NewConsumer(transerLogic)
+	if err != nil {
+		return nil, err
+	}
+	server, err := api.NewGinServer(maker, accountLogic, userLogic, transerLogic, producerProducer, consumerConsumer)
 	if err != nil {
 		return nil, err
 	}

@@ -9,10 +9,11 @@ import (
 	"github.com/namnv2496/go-wallet/internal/app"
 	"github.com/namnv2496/go-wallet/internal/databaseaccess"
 	"github.com/namnv2496/go-wallet/internal/logic"
+	"github.com/namnv2496/go-wallet/internal/mq/consumer"
+	"github.com/namnv2496/go-wallet/internal/mq/producer"
 	"github.com/namnv2496/go-wallet/internal/token"
 )
 
-// func Initialize(path string) (*database.Database, error) {
 func Initialize(path string) (*app.App, error) {
 
 	wire.Build(
@@ -20,6 +21,8 @@ func Initialize(path string) (*app.App, error) {
 		databaseaccess.DatabaseWireSet,
 		token.TokenWireSet,
 		logic.LogicWireSet,
+		producer.NewProducer,
+		consumer.NewConsumer,
 		api.ServerWireSet,
 		app.NewApp,
 	)
