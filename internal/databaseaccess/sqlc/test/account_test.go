@@ -26,6 +26,7 @@ func TestCreateAccount(t *testing.T) {
 	for i := 0; i < 40; i++ {
 		arg := db.CreateAccountParams{
 			UserID:   util.RandomInt(1, 40),
+			Balance:  util.RandomMoney(),
 			Currency: util.RandomCurrency(),
 		}
 		_, err := databaseDatabase.CreateAccount(

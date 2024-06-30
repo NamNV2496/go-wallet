@@ -1,0 +1,617 @@
+{
+	"info": {
+		"_postman_id": "e2e6784f-51c0-41bf-8253-2f37c07ff29f",
+		"name": "go-wallet",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "0. migration data",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/migration",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"migration"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "1. getaccount",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "v2.local.OOpYC_aoY-qTlj3gm_V4VpY9p2cBQdkB0xO6Fr1clm6s95DwMo2D84VDZHfgaOdJ0iVDLkrY406q5rglLUPEGuzYbE5jqCPizhiaOetOfTGoSK5ioW70G30E2R13blkXuV_NIecySNydx4n7ntTP4yulvZjN-yhOlRKqe1JhHji3JBcyv2HP1m7NkESZK__Ya2E2CzcudO4zb8-ExHmRqeBq6rJgyfaMAnOR-E0XuVAFPcC3DLTvWwRkGLIc3Px0hl8RQjNzaTZJorELNQ3Eb-yzjecXXJ9c3gDJTGfR.bnVsbA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/accounts/:id",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"accounts",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2.create user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"namnv\",\r\n    \"password\": \"namnv123@\",\r\n    \"full_name\": \"Nguyen van nam\",\r\n    \"email\": \"namnv@gmail.com\",\r\n    \"phone\": \"0988888888\",\r\n    \"role\": \"admin\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3. get user",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "v2.local.OOpYC_aoY-qTlj3gm_V4VpY9p2cBQdkB0xO6Fr1clm6s95DwMo2D84VDZHfgaOdJ0iVDLkrY406q5rglLUPEGuzYbE5jqCPizhiaOetOfTGoSK5ioW70G30E2R13blkXuV_NIecySNydx4n7ntTP4yulvZjN-yhOlRKqe1JhHji3JBcyv2HP1m7NkESZK__Ya2E2CzcudO4zb8-ExHmRqeBq6rJgyfaMAnOR-E0XuVAFPcC3DLTvWwRkGLIc3Px0hl8RQjNzaTZJorELNQ3Eb-yzjecXXJ9c3gDJTGfR.bnVsbA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/user?username=namnv",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"user"
+					],
+					"query": [
+						{
+							"key": "username",
+							"value": "namnv"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. update user",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "v2.local.8YacK4cJXhn0oBFkP5i9XsiUA-OY5n3rs9bjsqPxOVhRgME0ss2Ul_PfUGZY8mNII7cd8v4x1QAi_on6PVSd--wqb1FxSLiNhslPHFfvth8PLosEaTGHWAzFSZZqk-pF7_5FukDpN9R-ykwQibMLIjMLYREIm1xt7_T2x4VWgcKdWYJjBQESH-nZx7ClP47ylccJLxS-hXOd4ppzqCI63vx7qS0tly-gpXaseZetHY_k9AnwucCh59Ypt8rjq5FDNuegRO0UQZenDKKm5Rkmym7bl9qB7XWwUStBQnGkOw.bnVsbA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"namnv\",\r\n    \"password\": \"namnv123@\",\r\n    \"full_name\": \"Nguyen van nam\",\r\n    \"email\": \"namnv123@gmail.com\",\r\n    \"phone\": \"0978888888\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. verify user",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/verify_user?username=namnv",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"verify_user"
+					],
+					"query": [
+						{
+							"key": "username",
+							"value": "namnv"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6. get user by phone or username like",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "v2.local.8YacK4cJXhn0oBFkP5i9XsiUA-OY5n3rs9bjsqPxOVhRgME0ss2Ul_PfUGZY8mNII7cd8v4x1QAi_on6PVSd--wqb1FxSLiNhslPHFfvth8PLosEaTGHWAzFSZZqk-pF7_5FukDpN9R-ykwQibMLIjMLYREIm1xt7_T2x4VWgcKdWYJjBQESH-nZx7ClP47ylccJLxS-hXOd4ppzqCI63vx7qS0tly-gpXaseZetHY_k9AnwucCh59Ypt8rjq5FDNuegRO0UQZenDKKm5Rkmym7bl9qB7XWwUStBQnGkOw.bnVsbA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"w\",\r\n    \"phone\": \"17\",\r\n    \"limit\": 10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "7. login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"namnv\",\r\n    \"password\": \"namnv123@\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/users/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "8. get list account of current user",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "v2.local.nntDYdHv5mh9SdccJ1p65QNT1JRM2l7L47MSOp76aU-OQLMfrXgN6fh77HqQljb3En-4RmzzR6M1w_SWnZ0WLMHWOWcldhcX8hPUDbmDsXCXx8Sf4TwagoBpV87FVM7r7nk3F8oalnYSOc7lkvixN3pn6h8cwhgUzHLVObj8-zqqu1n1y6yE13M2CXef_xDgaIuDseOZH9BqsCylgWjt1FOTu8J_QVb-acrLSKsBGYcW7VYXEVxNWQZlv8QcQAgjJakDsw8c2F_R86SzNkNqpIeJxSldA-pFU4Kn34A-WcM.bnVsbA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/accounts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"accounts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "8.1. account by id",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "v2.local.WgztQb92Wz5ulI6XkOJ6S2MjCi7uRs2yPKg04NekmXU5qLkomvuOiLlmwvgZdeOszwkmtYk2IebaI_uNFKsBm0G09pZHGoOG8b-uV2qKRezBvXc1OYjTetyFWdcjDIsdSrjA1HHK6febllLZtgNpe3I71nFXeu8IYaLG6ilVexCDUv_BWkqwKVAlPyeXNWI07VAt2OST10q5MyJOXPeh46PcQOJZ6bVuZi8gKEMh3x3CMa97qThsmlF7xe6NToB_QvdRFTrUIBOAPmogsZVzCQrYMeAPKWXJjZrUbXzodg.bnVsbA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/accounts/:id",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"accounts",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "8"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "9. get all account",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "v2.local.WgztQb92Wz5ulI6XkOJ6S2MjCi7uRs2yPKg04NekmXU5qLkomvuOiLlmwvgZdeOszwkmtYk2IebaI_uNFKsBm0G09pZHGoOG8b-uV2qKRezBvXc1OYjTetyFWdcjDIsdSrjA1HHK6febllLZtgNpe3I71nFXeu8IYaLG6ilVexCDUv_BWkqwKVAlPyeXNWI07VAt2OST10q5MyJOXPeh46PcQOJZ6bVuZi8gKEMh3x3CMa97qThsmlF7xe6NToB_QvdRFTrUIBOAPmogsZVzCQrYMeAPKWXJjZrUbXzodg.bnVsbA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/accounts?page_id=1&page_size=10",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"accounts"
+					],
+					"query": [
+						{
+							"key": "page_id",
+							"value": "1"
+						},
+						{
+							"key": "page_size",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10. get transfer histories",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "v2.local.8LudX6a4OUm-o7eiJzl0Ll19EntNOQLbIFobCtfUEYJoQOhHmJC7A_is9Q9Idze1-zRQV30EsowS94-nnoroWaWRxuXqQ6H8tBI4s82TvTx2X_Y8PST3Y9OfGBORLVvYE12v2fbfdoucCauMObRrfFuFNCqcSdptsfxVyhZI5UEBiGXoZwZaMKE0aji3XNP9teXEHr3YM-VB3assi8sZOzo0G-jFlni-OuPJPqICte41I6VRwE7pBqnZLkBZgtoEeC_OZcLfdVgqYTzfIBbX6rjsvmpHcsneMdPpEeIIvSQ.bnVsbA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/transfers?from_account_id=1&to_account_id=11&limit=10&offset=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"transfers"
+					],
+					"query": [
+						{
+							"key": "from_account_id",
+							"value": "1"
+						},
+						{
+							"key": "to_account_id",
+							"value": "11"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						},
+						{
+							"key": "offset",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "11. get a transfer by id",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "v2.local.nntDYdHv5mh9SdccJ1p65QNT1JRM2l7L47MSOp76aU-OQLMfrXgN6fh77HqQljb3En-4RmzzR6M1w_SWnZ0WLMHWOWcldhcX8hPUDbmDsXCXx8Sf4TwagoBpV87FVM7r7nk3F8oalnYSOc7lkvixN3pn6h8cwhgUzHLVObj8-zqqu1n1y6yE13M2CXef_xDgaIuDseOZH9BqsCylgWjt1FOTu8J_QVb-acrLSKsBGYcW7VYXEVxNWQZlv8QcQAgjJakDsw8c2F_R86SzNkNqpIeJxSldA-pFU4Kn34A-WcM.bnVsbA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/transfer/14",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"transfer",
+						"14"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "12. create new account",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "v2.local.8YacK4cJXhn0oBFkP5i9XsiUA-OY5n3rs9bjsqPxOVhRgME0ss2Ul_PfUGZY8mNII7cd8v4x1QAi_on6PVSd--wqb1FxSLiNhslPHFfvth8PLosEaTGHWAzFSZZqk-pF7_5FukDpN9R-ykwQibMLIjMLYREIm1xt7_T2x4VWgcKdWYJjBQESH-nZx7ClP47ylccJLxS-hXOd4ppzqCI63vx7qS0tly-gpXaseZetHY_k9AnwucCh59Ypt8rjq5FDNuegRO0UQZenDKKm5Rkmym7bl9qB7XWwUStBQnGkOw.bnVsbA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"user_id\": 1,\r\n    \"currency\": \"USD\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/account",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"account"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "13. create new transfer",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "v2.local.sImEzm6xQIeUI5XhCUJHLow1f6S9CjQy0GXE3nUqzW0z0RT9NRchuqnAkWQb-ClR2ygLz1YrtsR_tmAcBWKuni69H5EPk8MOyh2JI4NgGzJM2mHx1Knriloc9k1GPGbR-OL1CdWvQgh9gz0EkHWsPXTRR7f-fEz_v_Zh4u6srayyZqvpGUVjiAy77ZTMyzBLq3FaN3DyOZYMFyHtQGyTxpvt2Q2uA7UkW4BboO2FSreK0fjRC6Iol4BnIGYfHBFXOE0IQ4yTX_dpB2p15vELoB4ogMJAi9MTRCyyt3aJVt0.bnVsbA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"from_account_id\": 1,\r\n    \"to_account_id\": 11,\r\n    \"amount\": 1,\r\n    \"currency\": \"USD\",\r\n    \"message\": \"Trả nợ nè\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/transfer",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"transfer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "14. fake result transfer",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "v2.local.nntDYdHv5mh9SdccJ1p65QNT1JRM2l7L47MSOp76aU-OQLMfrXgN6fh77HqQljb3En-4RmzzR6M1w_SWnZ0WLMHWOWcldhcX8hPUDbmDsXCXx8Sf4TwagoBpV87FVM7r7nk3F8oalnYSOc7lkvixN3pn6h8cwhgUzHLVObj8-zqqu1n1y6yE13M2CXef_xDgaIuDseOZH9BqsCylgWjt1FOTu8J_QVb-acrLSKsBGYcW7VYXEVxNWQZlv8QcQAgjJakDsw8c2F_R86SzNkNqpIeJxSldA-pFU4Kn34A-WcM.bnVsbA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"transfer_id\": 48,\r\n    \"from_id\": 5,\r\n    \"to_id\": 11,\r\n    \"amount\": 12,\r\n    \"currency\": \"USD\",\r\n    \"message\": \"thành công\",\r\n    \"status\": 1\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/transfers/fakeResult",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"transfers",
+						"fakeResult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "15. renew token",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"refresh_token\": \"v2.local.38D_q5VSbKrsIheEzd2v1gOPmkGXHjKRuyULCIwC7qJH35b5QXMgd9kRRxT92XqBhc-vICLtG79rZyBnRmYoIpvthWswNszJrMoe74Viit5EOwVH4ooIu--kAvoWxhe1l85TVnDmtM77AdG0j9uWQqhwMFeckx3O_-XlT8LrYabQCpKtsj8vNZJNugrZHCkVmwKvUQzI7aDhme9Lpv6THE4OMcz1ihON5Bz3da9emtAAPOWHtaK5kY7q8L7X5qhhtAfsulhIjxn-mqJMc409VQLmEpRLdKSHsNX8cyqb3d8.bnVsbA\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/users/renew_access",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"users",
+						"renew_access"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

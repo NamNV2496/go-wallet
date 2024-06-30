@@ -67,7 +67,7 @@ func (t transerLogic) ListTransfers(
 
 	arg := db.ListTransfersParams{
 		FromAccountID: from,
-		ToAccountID:   to,
+		Column2:       to,
 		Limit:         limit,
 		Offset:        offset,
 	}
@@ -105,19 +105,10 @@ func (t transerLogic) UpdateBalanceOfTransfer(
 
 func (t transerLogic) UpdateStatusOfTransfer(ctx context.Context, id int64, status int32, message string) (db.Transfer, error) {
 
-	var arg db.UpdateTransferStatusParams
-	// Success
-	if status == 1 {
-		arg = db.UpdateTransferStatusParams{
-			ID:     id,
-			Status: status,
-		}
-	} else {
-		arg = db.UpdateTransferStatusParams{
-			ID:      id,
-			Status:  status,
-			Message: message,
-		}
+	arg := db.UpdateTransferStatusParams{
+		ID:      id,
+		Status:  status,
+		Message: message,
 	}
 	return t.database.UpdateTransferStatus(ctx, arg)
 }

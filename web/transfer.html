@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer Money</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* Style for the popup */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 20%;
+            left: 20%;
+            /* transform: translate(-50%, -50%); */
+            background-color: #fefefe;
+            border: 1px solid #ccc;
+            width: 50%;
+            padding: 20px;
+            z-index: 1000;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .popup h3 {
+            margin-top: 0;
+        }
+        .popup label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .popup input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 5px 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .popup button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .popup button.cancel {
+            background-color: #ccc;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <button type="button" onclick="redirectToHome()">Home</button>
+    <h2>Transfer Money</h2>
+    <form id="transferForm">
+        <label for="fromAccountId">From Account ID:</label>
+        <input type="text" id="fromAccountId" name="from_account_id" readonly><br><br>
+        
+        <label for="toAccountId">To Account ID:</label>
+        <input type="text" id="toAccountId" name="to_account_id" readonly>
+        <button type="button" onclick="openAccountSearchPopup()">Select</button><br><br>
+        
+        <label for="amount">Amount:</label>
+        <input type="text" id="amount" name="amount"><br><br>
+        
+        <label for="currency">Currency:</label>
+        <input type="text" id="currency" name="currency"><br><br>
+        
+        <label for="message">Message:</label>
+        <input type="text" id="message" name="message"><br><br>
+        
+        <button type="button" onclick="transferMoney()">Transfer</button>
+    </form>
+
+    <div id="result"></div>
+
+    <!-- Popup for account selection -->
+    <div id="popup" class="popup">
+        <h3>Select an Account</h3>
+        <label for="searchUsername">Username:</label>
+        <input type="text" id="searchUsername">
+        <br><br>
+        <label for="searchPhone">Phone:</label>
+        <input type="text" id="searchPhone">
+        <br><br>
+        <button onclick="searchAccounts()">Search</button>
+        <button onclick="closePopup()" class="cancel">Cancel</button>
+        <hr>
+        <h3>Search Results</h3>
+        <div id="searchResults">
+            <!-- Search results will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        var token = ""; // Initialize token variable
+        var accounts = []; // Array to store fetched accounts
+
+        $(document).ready(function() {
+            token = sessionStorage.getItem('token');
+
+            if (!token) {
+                alert('No token found, please login first');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            var params = new URLSearchParams(window.location.search);
+            var fromAccountId = params.get('from');
+            $('#fromAccountId').val(fromAccountId);
+        });
+
+        function redirectToHome() {
+            window.location.href = 'main.html';
+        }
+
+        // Function to open the account search popup
+        function openAccountSearchPopup() {
+            resetPopup();
+            $('#popup').css('display', 'block');
+        }
+
+        // Function to close the account search popup
+        function closePopup() {
+            $('#popup').css('display', 'none');
+        }
+
+        // Function to search accounts based on username and phone
+        function searchAccounts() {
+            var username = $('#searchUsername').val();
+            var phone = $('#searchPhone').val();
+
+            var data = {
+                username: username,
+                phone: phone,
+                Limit: 100,
+            };
+
+            // API call to fetch accounts based on username and phone
+            fetch(`http://localhost:8080/api/v1/users`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                displaySearchResults(data);
+            })
+            .catch(error => {
+                console.error('Error fetching accounts:', error);
+                alert('Failed to fetch accounts. Please try again later.');
+            });
+        }
+
+        // Function to display search results in the popup
+        function displaySearchResults(results) {
+            var searchResultsDiv = document.getElementById('searchResults');
+            searchResultsDiv.innerHTML = ''; // Clear previous results
+
+            if (results.length === 0) {
+                searchResultsDiv.innerHTML = '<p>No accounts found.</p>';
+            } else {
+                results.forEach(account => {
+                    var accountDiv = document.createElement('div');
+                    accountDiv.innerHTML = `<p>
+                        <strong>Account ID:</strong> ${account.account_id}<br>
+                        <strong>Username:</strong> ${account.username}<br>
+                        <strong>Phone:</strong> ${account.phone}<br>
+                        <button onclick="selectAccount(${account.account_id}, '${account.username}', '${account.phone}')">Select</button>
+                    </p>`;
+                    searchResultsDiv.appendChild(accountDiv);
+                });
+            }
+        }
+
+        // Function to select an account and fill in the To Account ID field
+        function selectAccount(accountId, username, phone) {
+            $('#toAccountId').val(accountId);
+            $('#selectedUsername').val(username);
+            $('#selectedPhone').val(phone);
+            closePopup();
+        }
+
+        // Function to reset the popup fields
+        function resetPopup() {
+            $('#searchUsername').val('');
+            $('#searchPhone').val('');
+            $('#searchResults').html('');
+            $('#selectedUsername').val('');
+            $('#selectedPhone').val('');
+        }
+
+        // Function to transfer money
+        function transferMoney() {
+            var fromAccountId = $('#fromAccountId').val();
+            var toAccountId = $('#toAccountId').val();
+            var amount = $('#amount').val();
+
+            // Convert to integer types if necessary (assuming they are strings from input fields)
+            fromAccountId = parseInt(fromAccountId, 10); // Convert string to int
+            toAccountId = parseInt(toAccountId, 10); // Convert string to int
+            amount = parseInt(amount, 10); // Convert string to int
+
+            var data = {
+                from_account_id: fromAccountId,
+                to_account_id: toAccountId,
+                amount: amount,
+                currency: $('#currency').val(),
+                message: $('#message').val()
+            };
+
+            fetch('http://localhost:8080/api/v1/transfer', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(response => {
+                $('#result').html('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
+            })
+            .catch(error => {
+                $('#result').html('<p>Error occurred: ' + error.message + '</p>');
+            });
+        }
+    </script>
+</body>
+</html>

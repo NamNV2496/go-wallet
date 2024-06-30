@@ -1,6 +1,9 @@
 package api
 
 import (
+	"time"
+
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -55,8 +58,20 @@ func NewGinServer(
 
 func (server *Server) setupRouter() {
 	r := gin.Default()
-	r.POST("/migration", server.migration)
 
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"*"},
+		AllowHeaders:     []string{"*"},
+		ExposeHeaders:    []string{"*"},
+		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			return origin == "*"
+		},
+		MaxAge: 12 * time.Hour,
+	}))
+
+	r.POST("/migration", server.migration)
 	router := r.Group("/api/v1/")
 
 	router.POST("user", server.createUser)
@@ -67,7 +82,7 @@ func (server *Server) setupRouter() {
 	authRoutes := router.Group("/").Use(authMiddleware(server.token))
 
 	authRoutes.GET("user", server.getUser)
-	authRoutes.GET("users", server.getUsersByUsernameOrPhone)
+	authRoutes.POST("users", server.getUsersByUsernameOrPhone)
 	authRoutes.PUT("user", server.updateUser)
 
 	authRoutes.POST("account", server.createAccount)

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <button type="button" onclick="redirectToHome()">Home</button>
+    <title>Account Details</title>
+    <style>
+        .table-container {
+            margin: 16px;
+            width: 80%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <script>
+        function redirectToHome() {
+            window.location.href = 'main.html';
+        }
+        async function loadTransfers() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromAccountId = urlParams.get('id');
+            const toAccountId = document.getElementById('to-account-id').value;
+            const token = sessionStorage.getItem('token');
+
+            if (!token) {
+                alert('No token found, please login first');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            let apiUrl = `http://localhost:8080/api/v1/transfers?from_account_id=${fromAccountId}&limit=10&offset=1`;
+            if (toAccountId) {
+                apiUrl += `&to_account_id=${toAccountId}`;
+            }
+
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const transfers = await response.json();
+                const tableBody = document.getElementById('transfer-table-body');
+                tableBody.innerHTML = '';
+                transfers.forEach(transfer => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${transfer.id}</td>
+                        <td>${transfer.from_account_id}</td>
+                        <td>${transfer.to_account_id}</td>
+                        <td>${transfer.amount}</td>
+                        <td>${transfer.currency}</td>
+                        <td>${getStatusText(transfer.status)}</td>
+                        <td>${transfer.message}</td>
+                        
+                        <td>${new Date(transfer.created_at).toLocaleString()}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } else {
+                alert('Failed to load transfers');
+            }
+        }
+
+        function handleSearch(event) {
+            event.preventDefault();
+            loadTransfers();
+        }
+
+        window.onload = () => {
+            document.getElementById('search-form').addEventListener('submit', handleSearch);
+            loadTransfers(); // Load transfers on page load without to_account_id filter
+        };
+        function getStatusText(status) {
+            switch (status) {
+                case 0:
+                    return "Processing";
+                case 1:
+                    return "Successed";
+                case 2:
+                    return "Failed";
+                default:
+                    return "Unknown";
+            }
+        }
+
+        function redirectToTransfer() {
+            var fromAccountId = '5'; // Example value, replace with your actual logic to fetch fromAccountId
+            window.location.href = 'transfer.html?from=' + fromAccountId;
+        }
+    </script>
+</head>
+<body>
+    <h1>Account Details</h1>
+    <button type="button" onclick="redirectToTransfer()">Transfer money</button>
+    <form id="search-form">
+        <label for="to-account-id">To Account ID (optional):</label>
+        <input type="number" id="to-account-id" name="to-account-id">
+        <button type="submit">Search</button>
+    </form>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Transfer ID</th>
+                    <th>From Account ID</th>
+                    <th>To Account ID</th>
+                    <th>Amount</th>
+                    <th>Currency</th>
+                    <th>Status</th>
+                    <th>Message</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody id="transfer-table-body">
+                <!-- Transfer rows will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

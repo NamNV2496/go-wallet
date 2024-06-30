@@ -4,7 +4,7 @@ INSERT INTO accounts (
   balance,
   currency
 ) VALUES (
-  $1, 0, $2
+  $1, $2, $3
 ) RETURNING *;
 
 -- name: GetAccount :one
@@ -13,7 +13,7 @@ WHERE id = $1 LIMIT 1;
 
 -- name: GetAccountByUserId :many
 SELECT * FROM accounts
-WHERE accounts.user_id = $1 LIMIT 1;
+WHERE accounts.user_id = $1;
 
 -- name: GetBalance :one
 SELECT accounts.balance FROM accounts
@@ -22,7 +22,7 @@ WHERE id = $1;
 -- name: ListAccounts :many
 SELECT * FROM accounts
 WHERE accounts.user_id = $1
-ORDER BY id
+ORDER BY id asc
 LIMIT $2
 OFFSET $3;
 

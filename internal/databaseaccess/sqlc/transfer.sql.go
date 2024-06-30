@@ -80,15 +80,15 @@ SELECT id, from_account_id, to_account_id, amount, currency, status, message, cr
 WHERE 
     from_account_id = $1
     AND
-    to_account_id = $2
-ORDER BY id
+    ($2::bigint IS NULL OR $2::bigint = 0 OR to_account_id = $2::bigint)
+ORDER BY id asc
 LIMIT $3
 OFFSET $4
 `
 
 type ListTransfersParams struct {
 	FromAccountID int64 `json:"from_account_id"`
-	ToAccountID   int64 `json:"to_account_id"`
+	Column2       int64 `json:"column_2"`
 	Limit         int32 `json:"limit"`
 	Offset        int32 `json:"offset"`
 }
@@ -96,7 +96,7 @@ type ListTransfersParams struct {
 func (q *Queries) ListTransfers(ctx context.Context, arg ListTransfersParams) ([]Transfer, error) {
 	rows, err := q.db.Query(ctx, listTransfers,
 		arg.FromAccountID,
-		arg.ToAccountID,
+		arg.Column2,
 		arg.Limit,
 		arg.Offset,
 	)

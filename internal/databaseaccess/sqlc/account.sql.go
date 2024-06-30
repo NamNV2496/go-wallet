@@ -40,17 +40,18 @@ INSERT INTO accounts (
   balance,
   currency
 ) VALUES (
-  $1, 0, $2
+  $1, $2, $3
 ) RETURNING id, user_id, balance, currency, created_at
 `
 
 type CreateAccountParams struct {
 	UserID   int64  `json:"user_id"`
+	Balance  int64  `json:"balance"`
 	Currency string `json:"currency"`
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
-	row := q.db.QueryRow(ctx, createAccount, arg.UserID, arg.Currency)
+	row := q.db.QueryRow(ctx, createAccount, arg.UserID, arg.Balance, arg.Currency)
 	var i Account
 	err := row.Scan(
 		&i.ID,
@@ -82,7 +83,7 @@ func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
 
 const getAccountByUserId = `-- name: GetAccountByUserId :many
 SELECT id, user_id, balance, currency, created_at FROM accounts
-WHERE accounts.user_id = $1 LIMIT 1
+WHERE accounts.user_id = $1
 `
 
 func (q *Queries) GetAccountByUserId(ctx context.Context, userID int64) ([]Account, error) {
@@ -126,7 +127,7 @@ func (q *Queries) GetBalance(ctx context.Context, id int64) (int64, error) {
 const listAccounts = `-- name: ListAccounts :many
 SELECT id, user_id, balance, currency, created_at FROM accounts
 WHERE accounts.user_id = $1
-ORDER BY id
+ORDER BY id asc
 LIMIT $2
 OFFSET $3
 `

@@ -19,8 +19,8 @@ SELECT * FROM transfers
 WHERE 
     from_account_id = $1
     AND
-    to_account_id = $2
-ORDER BY id
+    ($2::bigint IS NULL OR $2::bigint = 0 OR to_account_id = $2::bigint)
+ORDER BY id asc
 LIMIT $3
 OFFSET $4;
 

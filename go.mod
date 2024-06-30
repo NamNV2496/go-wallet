@@ -78,6 +78,7 @@ require (
 require (
 	github.com/IBM/sarama v1.43.2
 	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a
+	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
