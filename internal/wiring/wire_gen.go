@@ -15,20 +15,17 @@ import (
 	"github.com/namnv2496/go-wallet/internal/mq/consumer"
 	"github.com/namnv2496/go-wallet/internal/mq/producer"
 	"github.com/namnv2496/go-wallet/internal/token"
+	"github.com/namnv2496/go-wallet/internal/worker"
 )
 
 // Injectors from wire.go:
 
-func Initialize(path string) (*app.App, error) {
-	configConfig, err := config.LoadAllConfig(path)
-	if err != nil {
-		return nil, err
-	}
-	database := databaseaccess.NewDatabase(configConfig)
+func Initialize(configConfig config.Config, redisOpt *worker.RedisConfigOpt) (*app.App, error) {
 	maker, err := token.NewPasetoMaker(configConfig)
 	if err != nil {
 		return nil, err
 	}
+	database := databaseaccess.NewDatabase(configConfig)
 	accountLogic, err := logic.NewAccountLogic(database)
 	if err != nil {
 		return nil, err
@@ -45,18 +42,19 @@ func Initialize(path string) (*app.App, error) {
 	if err != nil {
 		return nil, err
 	}
-	producerProducer, err := producer.NewProducer()
+	producerProducer, err := producer.NewProducer(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	consumerConsumer, err := consumer.NewConsumer(transferLogic)
+	consumerConsumer, err := consumer.NewConsumer(transferLogic, configConfig)
 	if err != nil {
 		return nil, err
 	}
-	server, err := api.NewGinServer(configConfig, maker, accountLogic, userLogic, transferLogic, sessionLogic, producerProducer, consumerConsumer)
+	redisTaskProcessor := worker.NewTaskProcessor(configConfig, redisOpt, database)
+	server, err := api.NewGinServer(configConfig, maker, accountLogic, userLogic, transferLogic, sessionLogic, producerProducer, consumerConsumer, redisTaskProcessor)
 	if err != nil {
 		return nil, err
 	}
-	appApp := app.NewApp(database, server)
+	appApp := app.NewApp(server)
 	return appApp, nil
 }

@@ -12,8 +12,7 @@ type TransferLogic interface {
 	CreateTransfer(ctx context.Context, from int64, to int64, amount int64, currency string, message string) (db.Transfer, error)
 	GetTransfer(ctx context.Context, id int64) (db.Transfer, error)
 	ListTransfers(ctx context.Context, from int64, to int64, limit int32, offset int32) ([]db.Transfer, error)
-	UpdateBalanceOfTransfer(ctx context.Context, from int64, to int64, amount int64) error
-	UpdateStatusOfTransfer(ctx context.Context, id int64, status int32, message string) (db.Transfer, error)
+	UpdateBalanceTransferTx(ctx context.Context, from int64, to int64, amount int64, id int64, status int32, message string) error
 }
 
 var _ TransferLogic = (*transerLogic)(nil)
@@ -74,41 +73,54 @@ func (t transerLogic) ListTransfers(
 	return t.database.ListTransfers(ctx, arg)
 }
 
-func (t transerLogic) UpdateBalanceOfTransfer(
+func (t transerLogic) UpdateBalanceTransferTx(
 	ctx context.Context,
 	from int64,
 	to int64,
 	amount int64,
+	id int64,
+	status int32,
+	message string,
 ) error {
-	// transfer money
-	minusArg := db.AddAccountBalanceParams{
-		ID:     from,
-		Amount: -amount,
-	}
-	_, err := t.database.AddAccountBalance(ctx, minusArg)
-	if err != nil {
-		log.Println("Error when update balance: ", err)
-		return err
-	}
 
-	addArg := db.AddAccountBalanceParams{
-		ID:     to,
-		Amount: amount,
-	}
-	_, err = t.database.AddAccountBalance(ctx, addArg)
+	err := t.database.ExecTx(
+		ctx,
+		func(query *db.Queries) error {
+			// transfer money
+			minusArg := db.AddAccountBalanceParams{
+				ID:     from,
+				Amount: -amount,
+			}
+			_, err := query.AddAccountBalance(ctx, minusArg)
+			if err != nil {
+				log.Println("Error when update balance of account: ", from, ", error: ", err)
+				return err
+			}
+
+			addArg := db.AddAccountBalanceParams{
+				ID:     to,
+				Amount: amount,
+			}
+			_, err = query.AddAccountBalance(ctx, addArg)
+			if err != nil {
+				log.Println("Error when update balance: ", err)
+				return err
+			}
+			arg := db.UpdateTransferStatusParams{
+				ID:      id,
+				Status:  status,
+				Message: message,
+			}
+			_, err = query.UpdateTransferStatus(ctx, arg)
+			if err != nil {
+				log.Println("Error when update status of transfer: ", err)
+				return err
+			}
+			return nil
+		},
+	)
 	if err != nil {
-		log.Println("Error when update balance: ", err)
 		return err
 	}
 	return nil
-}
-
-func (t transerLogic) UpdateStatusOfTransfer(ctx context.Context, id int64, status int32, message string) (db.Transfer, error) {
-
-	arg := db.UpdateTransferStatusParams{
-		ID:      id,
-		Status:  status,
-		Message: message,
-	}
-	return t.database.UpdateTransferStatus(ctx, arg)
 }

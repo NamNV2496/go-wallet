@@ -11,6 +11,7 @@ import (
 	db "github.com/namnv2496/go-wallet/internal/databaseaccess/sqlc"
 	"github.com/namnv2496/go-wallet/internal/token"
 	"github.com/namnv2496/go-wallet/internal/util"
+	"github.com/namnv2496/go-wallet/internal/worker"
 )
 
 type getUsersByUsernameOrPhoneRequest struct {
@@ -78,6 +79,20 @@ func (s *Server) createUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+
+	// send email to verify user
+	err = s.Queue.NewSendVerifyEmailTask(
+		ctx,
+		worker.EmailVerifyPayload{
+			Email:      user.Email,
+			Username:   req.Username,
+			SecretCode: util.RandomString(32),
+		},
+	)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
 	ctx.JSON(http.StatusCreated, newUserResponse(user))
 }
 
@@ -129,9 +144,9 @@ func (s *Server) updateUser(ctx *gin.Context) {
 }
 func (s *Server) verifyuser(ctx *gin.Context) {
 
-	userName := ctx.Query("username")
-	err := s.userService.VerifyEmail(ctx, userName)
-	if err != nil {
+	username := ctx.Query("username")
+	secretCode := ctx.Query("secret_code")
+	if err := s.userService.VerifyEmail(ctx, username, secretCode); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}

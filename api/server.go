@@ -13,6 +13,7 @@ import (
 	"github.com/namnv2496/go-wallet/internal/mq/consumer"
 	"github.com/namnv2496/go-wallet/internal/mq/producer"
 	"github.com/namnv2496/go-wallet/internal/token"
+	"github.com/namnv2496/go-wallet/internal/worker"
 )
 
 type Server struct {
@@ -24,7 +25,8 @@ type Server struct {
 	transferService logic.TransferLogic
 	sessionService  logic.SessionLogic
 	producer        *producer.Producer
-	consumer        *consumer.Consumer
+	Consumer        *consumer.Consumer
+	Queue           worker.RedisTaskProcessor
 }
 
 func NewGinServer(
@@ -36,6 +38,7 @@ func NewGinServer(
 	sessionService logic.SessionLogic,
 	producer *producer.Producer,
 	consumer *consumer.Consumer,
+	queue worker.RedisTaskProcessor,
 ) (*Server, error) {
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
@@ -50,7 +53,8 @@ func NewGinServer(
 		transferService: transferService,
 		sessionService:  sessionService,
 		producer:        producer,
-		consumer:        consumer,
+		Consumer:        consumer,
+		Queue:           queue,
 	}
 	server.setupRouter()
 	return server, nil
@@ -75,9 +79,9 @@ func (server *Server) setupRouter() {
 	router := r.Group("/api/v1/")
 
 	router.POST("user", server.createUser)
-	router.PUT("verify_user", server.verifyuser)
+	router.GET("verify_email", server.verifyuser)
 	router.POST("users/login", server.login)
-	router.POST("/users/renew_access", server.renewAccessToken)
+	router.POST("users/renew_access", server.renewAccessToken)
 
 	authRoutes := router.Group("/").Use(authMiddleware(server.token))
 
@@ -99,8 +103,7 @@ func (server *Server) setupRouter() {
 	server.router = r
 }
 
-func (server *Server) Start(address string) error {
-	go server.consumer.Start()
+func (server *Server) StartHttpServer(address string) error {
 	server.router.Run(address)
 	return nil
 }

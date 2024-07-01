@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/IBM/sarama"
+	"github.com/namnv2496/go-wallet/config"
 	"github.com/namnv2496/go-wallet/internal/mq"
 )
 
@@ -12,14 +13,17 @@ type Producer struct {
 	client sarama.SyncProducer
 }
 
-func NewProducer() (*Producer, error) {
+func NewProducer(
+	config config.Config,
+) (*Producer, error) {
 
-	config := sarama.NewConfig()
-	config.Producer.RequiredAcks = sarama.WaitForAll
-	config.Producer.Retry.Max = mq.MaxRetry
-	config.Producer.Return.Successes = true
+	configSarama := sarama.NewConfig()
+	configSarama.Producer.RequiredAcks = sarama.WaitForAll
+	configSarama.Producer.Retry.Max = mq.MaxRetry
+	configSarama.Producer.Return.Successes = true
+	configSarama.ClientID = mq.ClientId
 
-	producer, err := sarama.NewSyncProducer([]string{mq.BrokerList}, config)
+	producer, err := sarama.NewSyncProducer([]string{config.KafkaBroker}, configSarama)
 	if err != nil {
 		return nil, err
 	}

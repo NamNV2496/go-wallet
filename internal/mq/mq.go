@@ -6,7 +6,7 @@ const (
 	TopicResult  = "go-wallet-transfer-result"
 	ClientId     = "local-client-id"
 	Partition    = 0
-	MaxRetry     = 5
+	MaxRetry     = 1
 )
 
 type TransferRequest struct {

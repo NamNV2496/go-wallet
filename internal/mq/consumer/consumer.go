@@ -8,6 +8,7 @@ import (
 	"os/signal"
 
 	"github.com/IBM/sarama"
+	"github.com/namnv2496/go-wallet/config"
 	"github.com/namnv2496/go-wallet/internal/logic"
 	"github.com/namnv2496/go-wallet/internal/mq"
 )
@@ -19,14 +20,14 @@ type Consumer struct {
 
 func NewConsumer(
 	transferService logic.TransferLogic,
+	config config.Config,
 ) (*Consumer, error) {
 
 	saramaConfig := sarama.NewConfig()
 	saramaConfig.ClientID = mq.ClientId
 	// saramaConfig.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
 
-	brokers := mq.BrokerList
-	saramaConsumer, err := sarama.NewConsumerGroup([]string{brokers}, mq.ClientId, saramaConfig)
+	saramaConsumer, err := sarama.NewConsumerGroup([]string{config.KafkaBroker}, mq.ClientId, saramaConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -78,28 +79,32 @@ func (c *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 			log.Println("Failed to unmarshal Kafka message:", err)
 			continue
 		}
+		ctx := context.Background()
+		// check transferId
+		_, err = c.transferService.GetTransfer(ctx, transferResult.TransferId)
+		if err != nil {
+			log.Println("TransferId is not exist: ", err)
+			continue
+		}
+
 		if transferResult.Amount > 0 && transferResult.Status == 1 {
-			if err := c.transferService.UpdateBalanceOfTransfer(
-				context.Background(),
+			if err := c.transferService.UpdateBalanceTransferTx(
+				ctx,
 				transferResult.FromId,
 				transferResult.ToId,
 				transferResult.Amount,
+				transferResult.TransferId,
+				transferResult.Status,
+				transferResult.Message,
 			); err != nil {
 				log.Println("Failed to update balance:", err)
-				continue
+				// save to DLQ to handler later
+				// continue
 			}
-		}
-		if _, err := c.transferService.UpdateStatusOfTransfer(
-			context.Background(),
-			transferResult.TransferId,
-			transferResult.Status,
-			transferResult.Message,
-		); err != nil {
-			log.Println("Failed to update balance:", err)
-			continue
 		}
 		// can trigger to app can know
 
+		// mark handler done message to stop retry
 		session.MarkMessage(msg, "")
 	}
 	return nil

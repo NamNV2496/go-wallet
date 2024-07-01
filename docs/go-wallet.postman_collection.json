@@ -69,7 +69,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"namnv\",\r\n    \"password\": \"namnv123@\",\r\n    \"full_name\": \"Nguyen van nam\",\r\n    \"email\": \"namnv@gmail.com\",\r\n    \"phone\": \"0988888888\",\r\n    \"role\": \"admin\"\r\n}",
+					"raw": "{\r\n    \"username\": \"namnv3\",\r\n    \"password\": \"namnv3\",\r\n    \"full_name\": \"Nguyen van nam\",\r\n    \"email\": \"nguyenmykhanh2000@gmail.com\",\r\n    \"phone\": \"0988888888\",\r\n    \"role\": \"member\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -198,21 +198,18 @@
 		},
 		{
 			"name": "6. get user by phone or username like",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
 			"request": {
 				"auth": {
 					"type": "bearer",
 					"bearer": [
 						{
 							"key": "token",
-							"value": "v2.local.8YacK4cJXhn0oBFkP5i9XsiUA-OY5n3rs9bjsqPxOVhRgME0ss2Ul_PfUGZY8mNII7cd8v4x1QAi_on6PVSd--wqb1FxSLiNhslPHFfvth8PLosEaTGHWAzFSZZqk-pF7_5FukDpN9R-ykwQibMLIjMLYREIm1xt7_T2x4VWgcKdWYJjBQESH-nZx7ClP47ylccJLxS-hXOd4ppzqCI63vx7qS0tly-gpXaseZetHY_k9AnwucCh59Ypt8rjq5FDNuegRO0UQZenDKKm5Rkmym7bl9qB7XWwUStBQnGkOw.bnVsbA",
+							"value": "v2.local.nntDYdHv5mh9SdccJ1p65QNT1JRM2l7L47MSOp76aU-OQLMfrXgN6fh77HqQljb3En-4RmzzR6M1w_SWnZ0WLMHWOWcldhcX8hPUDbmDsXCXx8Sf4TwagoBpV87FVM7r7nk3F8oalnYSOc7lkvixN3pn6h8cwhgUzHLVObj8-zqqu1n1y6yE13M2CXef_xDgaIuDseOZH9BqsCylgWjt1FOTu8J_QVb-acrLSKsBGYcW7VYXEVxNWQZlv8QcQAgjJakDsw8c2F_R86SzNkNqpIeJxSldA-pFU4Kn34A-WcM.bnVsbA",
 							"type": "string"
 						}
 					]
 				},
-				"method": "GET",
+				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
@@ -549,7 +546,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "v2.local.nntDYdHv5mh9SdccJ1p65QNT1JRM2l7L47MSOp76aU-OQLMfrXgN6fh77HqQljb3En-4RmzzR6M1w_SWnZ0WLMHWOWcldhcX8hPUDbmDsXCXx8Sf4TwagoBpV87FVM7r7nk3F8oalnYSOc7lkvixN3pn6h8cwhgUzHLVObj8-zqqu1n1y6yE13M2CXef_xDgaIuDseOZH9BqsCylgWjt1FOTu8J_QVb-acrLSKsBGYcW7VYXEVxNWQZlv8QcQAgjJakDsw8c2F_R86SzNkNqpIeJxSldA-pFU4Kn34A-WcM.bnVsbA",
+							"value": "v2.local.mA_Jp89F7-TvFS7UAv539U6uv1wzy9rNIpVhMe2Vk5_tk0ae2FXiU7K5PZC2oNFo0YCEAfybwngIThfK0laonQLWi8GKwHC9J7DZfDLloe2goI8AxdKLDII-9cBrBXYBC9MkygtZYNWbrFUAckt4YIAG4epQorGj_Jmlr-keCCXoaiaZ4P7KJ2LHmvi-YzNr0ogZNrFJU-4fuOmb2cHdhg2S4ZW5xLQjr1DWOHYwfILwT6ipVLHx2FOPWeqRDvu-WrIGEUj40p7wmlNkmnmB11ZnLRSd45j20iKvTUb9-i8.bnVsbA",
 							"type": "string"
 						}
 					]
@@ -608,6 +605,37 @@
 						"v1",
 						"users",
 						"renew_access"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "16. verify email",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/verify_email?username=namnv3&secret_code=bquqrybxourmgjmrfjzhrnrvmntpemgj",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"verify_email"
+					],
+					"query": [
+						{
+							"key": "username",
+							"value": "namnv3"
+						},
+						{
+							"key": "secret_code",
+							"value": "bquqrybxourmgjmrfjzhrnrvmntpemgj"
+						}
 					]
 				}
 			},

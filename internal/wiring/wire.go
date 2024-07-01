@@ -12,18 +12,22 @@ import (
 	"github.com/namnv2496/go-wallet/internal/mq/consumer"
 	"github.com/namnv2496/go-wallet/internal/mq/producer"
 	"github.com/namnv2496/go-wallet/internal/token"
+	"github.com/namnv2496/go-wallet/internal/worker"
 )
 
-func Initialize(path string) (*app.App, error) {
+func Initialize(
+	configConfig config.Config,
+	redisOpt *worker.RedisConfigOpt,
+) (*app.App, error) {
 
 	wire.Build(
-		config.ConfigWireSet,
 		databaseaccess.DatabaseWireSet,
 		token.TokenWireSet,
 		logic.LogicWireSet,
 		producer.NewProducer,
 		consumer.NewConsumer,
 		api.ServerWireSet,
+		worker.WorkerWireSet,
 		app.NewApp,
 	)
 	return nil, nil

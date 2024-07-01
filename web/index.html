@@ -4,6 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <style>
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
     <script>
         async function login(event) {
             event.preventDefault();
@@ -32,6 +66,54 @@
                 alert('Login failed');
             }
         }
+
+        function showRegisterModal() {
+            document.getElementById('registerModal').style.display = 'block';
+        }
+
+        function closeRegisterModal() {
+            document.getElementById('registerModal').style.display = 'none';
+        }
+
+        async function register(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+            const fullName = document.getElementById('reg-full-name').value;
+            const email = document.getElementById('reg-email').value;
+            const phone = document.getElementById('reg-phone').value;
+            const role = document.getElementById('reg-role').value;
+
+            const response = await fetch('http://localhost:8080/api/v1/user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    full_name: fullName,
+                    email: email,
+                    phone: phone,
+                    role: role
+                })
+            });
+
+            if (response.ok) {
+                alert('Registration successful');
+                closeRegisterModal();
+            } else {
+                alert('Registration failed: ', response.body);
+            }
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('registerModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
     </script>
 </head>
 <body>
@@ -45,5 +127,35 @@
         <br>
         <button type="submit">Login</button>
     </form>
+    <button onclick="showRegisterModal()">Register</button>
+
+    <!-- The Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRegisterModal()">&times;</span>
+            <h2>Register</h2>
+            <form onsubmit="register(event)">
+                <label for="reg-username">Username:</label>
+                <input type="text" id="reg-username" name="reg-username" required>
+                <br>
+                <label for="reg-password">Password:</label>
+                <input type="password" id="reg-password" name="reg-password" required>
+                <br>
+                <label for="reg-full-name">Full Name:</label>
+                <input type="text" id="reg-full-name" name="reg-full-name" required>
+                <br>
+                <label for="reg-email">Email:</label>
+                <input type="email" id="reg-email" name="reg-email" required>
+                <br>
+                <label for="reg-phone">Phone:</label>
+                <input type="tel" id="reg-phone" name="reg-phone" required>
+                <br>
+                <label for="reg-role">Role:</label>
+                <input type="tel" id="reg-role" name="reg-role" required>
+                <br>
+                <button type="submit">Register</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

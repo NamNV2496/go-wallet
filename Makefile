@@ -1,5 +1,5 @@
 server:
-	go run cmd/main.go
+	go run main.go
 sqlc:
 	sqlc generate
 wire:

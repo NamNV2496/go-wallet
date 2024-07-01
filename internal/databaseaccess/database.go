@@ -3,6 +3,9 @@ package databaseaccess
 import (
 	"context"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/namnv2496/go-wallet/config"
@@ -15,12 +18,20 @@ type Database struct {
 	*db.Queries
 }
 
-var configLocal *config.Config
+var (
+	interruptSignals = []os.Signal{
+		os.Interrupt,
+		syscall.SIGTERM,
+		syscall.SIGINT,
+	}
+	configLocal *config.Config
+)
 
 func NewDatabase(config config.Config) *Database {
 
 	log.Println("Connect to DB: ", config.DBSource)
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(context.Background(), interruptSignals...)
+	defer stop()
 	conPool, err := pgxpool.New(ctx, config.DBSource)
 	if err != nil {
 		log.Fatalln("cannot connect to db: ", err)

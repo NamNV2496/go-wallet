@@ -17,6 +17,7 @@ type Querier interface {
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailParams) (VerifyEmail, error)
 	GetAccount(ctx context.Context, id int64) (Account, error)
 	GetAccountByUserId(ctx context.Context, userID int64) ([]Account, error)
 	GetBalance(ctx context.Context, id int64) (int64, error)
@@ -30,6 +31,7 @@ type Querier interface {
 	UpdateExpiredTime(ctx context.Context, arg UpdateExpiredTimeParams) (Session, error)
 	UpdateTransferStatus(ctx context.Context, arg UpdateTransferStatusParams) (Transfer, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
+	UpdateVerifyEmail(ctx context.Context, arg UpdateVerifyEmailParams) (VerifyEmail, error)
 	VerifyEmail(ctx context.Context, arg VerifyEmailParams) (User, error)
 }
 

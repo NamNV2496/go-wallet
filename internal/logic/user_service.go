@@ -16,7 +16,7 @@ type UserLogic interface {
 	GetUser(ctx context.Context, username string) (db.User, error)
 	GetUsersByUsernameOrPhone(ctx context.Context, Username string, phone string, limit int32) ([]db.GetUsersByUsernameOrPhoneRow, error)
 	UpdateUser(ctx context.Context, password string, fullname string, email string, phone string, username string) (db.User, error)
-	VerifyEmail(ctx context.Context, username string) error
+	VerifyEmail(ctx context.Context, username string, secretCode string) error
 }
 
 var _ UserLogic = (*userLogic)(nil)
@@ -102,6 +102,7 @@ func (u userLogic) CreateUser(
 		FullName:        fullname,
 		Email:           email,
 		Phone:           phone,
+		Role:            role,
 		IsEmailVerified: false,
 	}
 	return u.database.CreateUser(ctx, arg)
@@ -141,19 +142,42 @@ func (u userLogic) UpdateUser(ctx context.Context, password string, fullname str
 	return u.database.UpdateUser(ctx, arg)
 }
 
-func (u userLogic) VerifyEmail(ctx context.Context, username string) error {
+func (u userLogic) VerifyEmail(
+	ctx context.Context,
+	username string,
+	secretCode string,
+) error {
 
-	arg := db.VerifyEmailParams{
-		Username: pgtype.Text{
-			String: username,
-			Valid:  true,
+	err := u.database.ExecTx(
+		ctx,
+		func(query *db.Queries) error {
+
+			updateVerifyArg := db.UpdateVerifyEmailParams{
+				Username:   username,
+				SecretCode: secretCode,
+			}
+			_, err := query.UpdateVerifyEmail(ctx, updateVerifyArg)
+			if err != nil {
+				return err
+			}
+			arg := db.VerifyEmailParams{
+				Username: pgtype.Text{
+					String: username,
+					Valid:  true,
+				},
+				IsEmailVerified: pgtype.Bool{
+					Bool:  true,
+					Valid: true,
+				},
+			}
+			_, err = query.VerifyEmail(ctx, arg)
+			if err != nil {
+				return err
+			}
+
+			return nil
 		},
-		IsEmailVerified: pgtype.Bool{
-			Bool:  true,
-			Valid: true,
-		},
-	}
-	_, err := u.database.VerifyEmail(ctx, arg)
+	)
 	if err != nil {
 		return err
 	}
