@@ -1,6 +1,10 @@
 #!/bin/sh
 
-set -e
+# Wait for Kafka to be available
+while ! nc -z kafka 29092; do
+  echo "Waiting for Kafka..."
+  sleep 2
+done
 
-echo "start the app"
+# Start the main application
 exec "$@"

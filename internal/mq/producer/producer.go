@@ -3,6 +3,7 @@ package producer
 import (
 	"encoding/json"
 	"log"
+	"os"
 
 	"github.com/IBM/sarama"
 	"github.com/namnv2496/go-wallet/config"
@@ -23,7 +24,13 @@ func NewProducer(
 	configSarama.Producer.Return.Successes = true
 	configSarama.ClientID = mq.ClientId
 
-	producer, err := sarama.NewSyncProducer([]string{config.KafkaBroker}, configSarama)
+	kafkaBroker := os.Getenv("KAFKA_BROKER")
+	if kafkaBroker == "" {
+		log.Println("KAFKA_BROKER environment variable not set")
+	} else {
+		kafkaBroker = config.KafkaBroker
+	}
+	producer, err := sarama.NewSyncProducer([]string{kafkaBroker}, configSarama)
 	if err != nil {
 		return nil, err
 	}

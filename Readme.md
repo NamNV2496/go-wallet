@@ -71,10 +71,14 @@
 ## Run with docker
 
 	1. docker compose up
+	2. Call API to migrate DB `http://localhost:8080/migration`
 
 ## Run with normal
 
-	1. `make server`
+	1. Modify docker compose `- KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:29092` and comment `api-service:`
+	2. run `docker compose up` to setup kafka, redis and postgres
+	3. `make server`
+	4. Call API to migrate DB `http://localhost:8080/migration`
 
 Database
 

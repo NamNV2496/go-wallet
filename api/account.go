@@ -19,11 +19,6 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 	authPayload := ctx.MustGet(authorPayloadKey).(*token.Payload)
-	if authPayload.UserId != req.UserID {
-		err := errors.New("Cannot create account for another person")
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
 	account, err := server.accountService.CreateAccount(ctx, authPayload.UserId, req.Currency)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))

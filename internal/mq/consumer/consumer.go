@@ -27,7 +27,13 @@ func NewConsumer(
 	saramaConfig.ClientID = mq.ClientId
 	// saramaConfig.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
 
-	saramaConsumer, err := sarama.NewConsumerGroup([]string{config.KafkaBroker}, mq.ClientId, saramaConfig)
+	kafkaBroker := os.Getenv("KAFKA_BROKER")
+	if kafkaBroker == "" {
+		log.Println("KAFKA_BROKER environment variable not set")
+	} else {
+		kafkaBroker = config.KafkaBroker
+	}
+	saramaConsumer, err := sarama.NewConsumerGroup([]string{kafkaBroker}, mq.ClientId, saramaConfig)
 	if err != nil {
 		return nil, err
 	}
