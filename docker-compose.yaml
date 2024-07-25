@@ -16,7 +16,6 @@ services:
         - "2181:2181"
     environment:
         - ALLOW_ANONYMOUS_LOGIN=yes
-    restart: always
 
   kafka:
     image: "bitnami/kafka:3.7.1-debian-12-r0"
@@ -25,31 +24,30 @@ services:
     environment:
         - KAFKA_BROKER_ID=1
         - KAFKA_CFG_LISTENERS=PLAINTEXT://:29092
-        - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092
+        - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:29092
         - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
         - ALLOW_PLAINTEXT_LISTENER=yes
     depends_on:
         - zookeeper
-    restart: always
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
-  api-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    environment:
-      - DB_SOURCE=postgresql://root:secret@postgres:5432/postgres?sslmode=disable
-      - REDIS_ADDRESS=redis:6379
-      - KAFKA_BROKER=kafka:29092
-    depends_on:
-      - postgres
-      - redis
-      - kafka
-    command: [ "/app/main" ]
+  # wallet-service:
+  #   build:
+  #     context: .
+  #     dockerfile: wallet/Dockerfile
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - DB_SOURCE=postgresql://root:secret@postgres:5432/postgres?sslmode=disable
+  #     - REDIS_ADDRESS=redis:6379
+  #     - KAFKA_BROKER=kafka:29092
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #     - kafka
+  #   command: [ "/app/main" ]
 
 volumes:
   data-volume:

@@ -1,29 +1,5 @@
-<!-- # Ý tưởng
-- 1 App ví điện tử (go-wallet)
-- monolithic: gồm api gateway, wallet (manage transaction), account(manage balance and account)
-- API 
-	- tạo tk có gửi OTP qua email
-	- login
-	- lấy ra thông tin tài khoản theo token
-	- Lấy ra danh sách các tài khoản gợi ý người nhận theo dữ liệu người dùng nhập (user_name hoặc số điện thoại)
-	- api chuyển tiền xử lý chuyển tiền async qua kafka. (add case high workload and case fail) and idempotence
-	- search lịch sử chuyển khoản (ngày từ ... đến ..., theo số stk người nhận)
-	- nạp tiền: hold ở BE timeoout chờ call API fake to confirm through kafka -->
 
 <details>
-
-# Setup
-## postgres
-
-```txt
-1. download image
-
-	docker pull postgres:16.3-alpine
-
-2. run container
-
-	docker run --name postgres -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=wallet -p 5432:5432 -d postgres:16.3-alpine
-```
 
 ## sqlc
 
@@ -40,7 +16,7 @@
 ```
 </details>
 
-# This is a basic wallet was implemented by Golang.
+# This is a basic online wallet implemented by Golang with TCC pattern. The project includes: Authorization, distributed task queue, send email, and transfer money.
 
 # Technologies
 
@@ -53,11 +29,16 @@
 	7. asynq - "github.com/hibiken/asynq"
 	8. email - "github.com/jordan-wright/email"
 	9. DB transaction - "github.com/jackc/pgx/v5/pgxpool"
+	10. TCC - "github.com/dtm-labs/dtm"
 
 
 ![alt text](docs/flow.png)
 
-# Feature
+## TCC flow
+
+![alt text](docs/dtm.png)
+
+# Features
 
 	1. Login with jwt or paseto with session to renew token
 	2. Get all accounts of user
@@ -68,23 +49,20 @@
 	7. Get history of transfer money
 
 # How to run
-## Run with docker
+<!-- ## Run with docker
 
 	1. docker compose up
-	2. Call API to migrate DB `http://localhost:8080/migration`
+	2. Call API to migrate DB `http://localhost:8080/migration` -->
 
 ## Run with normal
 
-	1. Modify docker compose `- KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:29092` and comment `api-service:`
+	1. open cmd in current directory
 	2. run `docker compose up` to setup kafka, redis and postgres
-	3. `make server`
-	4. Call API to migrate DB `http://localhost:8080/migration`
+	3. go to `cd ./dtm` and run `go run main.go`
+	4. go to `cd ./wallet` and run `make server`
+	5. Call API to migrate DB `http://localhost:8080/migration`
 
-Database
-
-![alt text](docs/db.png)
-
-Demostration
+## Demostration
 
 ![alt text](docs/image.png)
 ![alt text](docs/image-1.png)
